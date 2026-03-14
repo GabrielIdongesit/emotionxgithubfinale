@@ -14,12 +14,7 @@ useEffect(() => {
 }, []);
 
 
-const [ products, setProducts] = useState([]);
 
-useEffect(() => {
-  const savedProducts = JSON.parse(localStorage.getItem("products")) || [];
-  setProducts([...data, ...savedProducts]);
-}, []);
 
 
   // Filter by type
