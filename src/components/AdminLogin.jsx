@@ -1,23 +1,34 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-const ADMIN_EMAIL = "admin@emotionx.com";
-const ADMIN_PASSWORD = "admin123";
+import { useAuth } from "../context/AuthContext";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      localStorage.setItem("isAdmin", "true");
-      navigate("/admin-login"); // ✅ FIXED PATH
-    } else {
-      setError("Invalid admin credentials");
+    try {
+      const user = await login(email, password);
+
+      if (user.role !== "admin") {
+        setError("Access denied. This login is for admins only.");
+        return;
+      }
+
+      // role is "admin" → go to the actual dashboard
+      navigate("/admin-login");
+    } catch (err) {
+      setError(err.message || "Invalid admin credentials");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -27,13 +38,9 @@ const AdminLogin = () => {
         onSubmit={handleLogin}
         className="bg-white p-6 rounded shadow w-full max-w-sm"
       >
-        <h2 className="text-2xl font-bold text-center mb-4">
-          Admin Login
-        </h2>
+        <h2 className="text-2xl font-bold text-center mb-4">Admin Login</h2>
 
-        {error && (
-          <p className="text-red-500 text-sm mb-3">{error}</p>
-        )}
+        {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
         <input
           type="email"
@@ -53,8 +60,12 @@ const AdminLogin = () => {
           required
         />
 
-        <button className="w-full bg-black text-white py-2 rounded">
-          Login
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-black text-white py-2 rounded disabled:opacity-50 transition"
+        >
+          {loading ? "Logging in..." : "Login"}
         </button>
       </form>
     </div>

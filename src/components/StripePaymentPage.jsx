@@ -1,85 +1,76 @@
 import React, { useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
-import { Elements, CardElement, useStripe } from "@stripe/react-stripe-js";
-import { useLocation, useNavigate } from "react-router-dom";
+import {
+  Elements,
+  CardElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
+
+import { paymentAPI } from "../services/payments.js";
 
 const stripePromise = loadStripe("pk_test_your_publishable_key_here");
 
 // ------------------
 // Checkout Form
 // ------------------
-const CheckoutForm = ({ totalAmount }) => {
-const stripe = useStripe();
-// const elements = useElements();
-// const navigate = useNavigate();
-const [email, setEmail] = useState("");
-
-const handleSubmit = async (e) => {
-e.preventDefault();
-
-```
-if (!stripe || !elements) return;
-
-// Simulated success (frontend only)
-alert("Payment successful ✅");
-navigate("/success");
-```
-
-};
-
-return ( <form onSubmit={handleSubmit} className="max-w-md mx-auto p-6 bg-white rounded shadow"> <h2 className="text-xl font-bold mb-4">Pay with Card (USD)</h2>
-
-  <p className="mb-4 font-semibold">
-    Total: ${totalAmount.toFixed(2)}
-  </p>
-
-  <input
-    type="email"
-    placeholder="Email"
-    value={email}
-    onChange={(e) => setEmail(e.target.value)}
-    className="w-full p-2 border rounded mb-3"
-    required
-  />
-
-  <div className="border p-2 rounded mb-3">
-    <CardElement />
-  </div>
-
-  <button
-    type="submit"
-    disabled={!stripe}
-    className="w-full bg-blue-600 text-white py-2 rounded"
-  >
-    Pay ${totalAmount.toFixed(2)}
-  </button>
-</form>
-
-
-);
-};
 
 // ------------------
 // Main Page
 // ------------------
-const StripePaymentPage = () => {
-const location = useLocation();
-const navigate = useNavigate();
+const StripePaymentPage = ({ orderId, total, onSuccess }) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-const totalAmount = location.state?.totalAmount;
+  const handlePay = async () => {
+    if (!stripe || !elements) return;
+    setLoading(true);
+    setError(null);
 
-if (!totalAmount) {
-return ( <div className="text-center mt-10"> <h2>No order found</h2>
-<button
-onClick={() => navigate("/cart")}
-className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
->
-Back to Cart </button> </div>
-);
-}
+    try {
+      // 1. Create PaymentIntent on backend
+      const { data } = await paymentAPI.createStripeIntent(orderId);
+      const { clientSecret, paymentIntentId } = data.data;
 
-return ( <Elements stripe={stripePromise}> <CheckoutForm totalAmount={totalAmount} /> </Elements>
-);
+      // 2. Confirm payment with Stripe on frontend
+      const result = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: { card: elements.getElement(CardElement) },
+      });
+
+      if (result.error) {
+        setError(result.error.message);
+        return;
+      }
+
+      // 3. Notify backend of success
+      await paymentAPI.confirmStripe(orderId, paymentIntentId);
+      onSuccess();
+    } catch (err) {
+      setError(err.response?.data?.message || "Payment failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-xl shadow p-6 flex-1">
+      <h2 className="text-lg font-bold mb-1">Pay with Card (USD)</h2>
+      <p className="text-gray-500 text-sm mb-4">Total: ${total}</p>
+      <div className="border rounded-lg px-3 py-3 mb-4">
+        <CardElement options={{ style: { base: { fontSize: "16px" } } }} />
+      </div>
+      {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+      <button
+        onClick={handlePay}
+        disabled={loading || !stripe}
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition disabled:opacity-50"
+      >
+        {loading ? "Processing..." : `Pay $${total}`}
+      </button>
+    </div>
+  );
 };
 
 export default StripePaymentPage;

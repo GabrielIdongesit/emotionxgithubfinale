@@ -5,15 +5,17 @@ import { MdFavorite, MdHelp } from "react-icons/md";
 import { HiUser } from "react-icons/hi";
 import { NavLink } from "react-router-dom";
 
-// AUTH
-import { getCurrentUser, logoutUser } from "../utils/auth";
+import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 
-const Navbar = ({ setSearchTerm, cartCount }) => {
+const Navbar = ({ setSearchTerm }) => {
   const [nav, setNav] = useState(false);
-  const user = getCurrentUser();
+
+  const { user, logout } = useAuth();
+  const { cartCount } = useCart();
 
   const handleLogout = () => {
-    logoutUser();
+    logout();
     window.location.href = "/";
   };
 
@@ -72,7 +74,7 @@ const Navbar = ({ setSearchTerm, cartCount }) => {
           </NavLink>
         </div>
 
-        {/* CART VISIBLE ON MOBILE */}
+        {/* Cart Icon with live count badge */}
         <NavLink
           to="/cart"
           className="text-black flex md:flex border p-3 border-teal-400 items-center rounded-full relative"
@@ -80,7 +82,7 @@ const Navbar = ({ setSearchTerm, cartCount }) => {
           <BsFillCartFill size={20} className="mr-2" />
           Cart
           {cartCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 rounded-full">
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold">
               {cartCount}
             </span>
           )}
@@ -90,9 +92,11 @@ const Navbar = ({ setSearchTerm, cartCount }) => {
           {user ? (
             <>
               <div className="w-8 h-8 rounded-full bg-teal-500 flex cursor-pointer italic items-center justify-center text-white font-bold text-sm">
-                {getUserAvatar(user.name)}
+                {getUserAvatar(user.fullName)}
               </div>
-              <span className="text-sm italic cursor-pointer text-gray-600">Hi, {user.name}</span>
+              <span className="text-sm italic cursor-pointer text-gray-600">
+                Hi, {user.fullName}
+              </span>
               <button
                 onClick={handleLogout}
                 className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
@@ -103,13 +107,13 @@ const Navbar = ({ setSearchTerm, cartCount }) => {
           ) : (
             <>
               <NavLink
-                to="/signin"
+                to="/Signin"
                 className="text-xl hover:bg-teal-600 hover:text-white border hover:scale-105 duration-300 rounded-xl p-2 uppercase font-semibold flex items-center"
               >
                 <HiUser size={25} className="mr-2" /> Login
               </NavLink>
               <NavLink
-                to="/signup"
+                to="/SignUp"
                 className="text-xl hover:bg-teal-600 hover:text-white border hover:scale-105 duration-300 rounded-xl p-2 uppercase font-semibold flex items-center"
               >
                 <HiUser size={25} className="mr-2" /> Sign Up
@@ -120,11 +124,19 @@ const Navbar = ({ setSearchTerm, cartCount }) => {
       </div>
 
       {/* Overlay */}
-      {nav && <div className="fixed top-0 left-0 w-full h-screen bg-black/80 z-20" onClick={() => setNav(false)} />}
+      {nav && (
+        <div
+          className="fixed top-0 left-0 w-full h-screen bg-black/80 z-20"
+          onClick={() => setNav(false)}
+        />
+      )}
 
       {/* Close Button */}
       {nav && (
-        <div onClick={() => setNav(false)} className="absolute top-4 right-4 cursor-pointer z-30">
+        <div
+          onClick={() => setNav(false)}
+          className="absolute top-4 right-4 cursor-pointer z-30"
+        >
           <AiOutlineClose
             className="hover:bg-teal-400 p-2 hover:text-white hover:rounded-full"
             size={35}
@@ -147,7 +159,7 @@ const Navbar = ({ setSearchTerm, cartCount }) => {
             </NavLink>
 
             {!user && (
-              <NavLink to="/signin" onClick={() => setNav(false)}>
+              <NavLink to="/Signin" onClick={() => setNav(false)}>
                 <li className="text-xl hover:bg-teal-600 hover:text-white border cursor-pointer rounded-xl p-2 my-2 uppercase font-semibold flex items-center">
                   <HiUser size={25} className="mr-2" /> Login
                 </li>
@@ -157,10 +169,10 @@ const Navbar = ({ setSearchTerm, cartCount }) => {
             {user && (
               <li
                 onClick={handleLogout}
-                className="text-xl hover:bg-red-500 hover:text-white border rounded-xl p-2 my-2 uppercase font-semibold flex items-center"
+                className="text-xl hover:bg-red-500 hover:text-white border rounded-xl p-2 my-2 uppercase font-semibold flex items-center cursor-pointer"
               >
-                <div className="w-6 h-6 rounded-full bg-teal-500 flex italic cursor-pointer items-center justify-center text-white font-bold text-xs mr-2">
-                  {getUserAvatar(user.name)}
+                <div className="w-6 h-6 rounded-full bg-teal-500 flex italic items-center justify-center text-white font-bold text-xs mr-2">
+                  {getUserAvatar(user.fullName)}
                 </div>
                 Logout
               </li>

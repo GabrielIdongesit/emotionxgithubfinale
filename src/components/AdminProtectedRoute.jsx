@@ -1,11 +1,14 @@
 import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const AdminProtectedRoute = ({ children }) => {
-  const isAdmin = localStorage.getItem("isAdmin") === "true";
+  const { user } = useAuth();
 
-  if (!isAdmin) {
-    return <Navigate to="/admin-dashboard" replace />;
-  }
+  // Not logged in at all,  go to signin
+  if (!user) return <Navigate to="/Signin" replace />;
+
+  // Logged in but not admin,  go back to home
+  if (user.role !== "admin") return <Navigate to="/" replace />;
 
   return children;
 };

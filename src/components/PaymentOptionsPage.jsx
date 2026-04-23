@@ -1,47 +1,54 @@
-import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import StripePaymentPage from "./StripePaymentPage";
 import BitcoinPaymentPage from "./BitcoinPaymentPage";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  Elements,
+  CardElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
+
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
 const PaymentOptionsPage = () => {
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const orderId = searchParams.get("orderId");
+  const method = searchParams.get("method"); // "card" or "bitcoin"
+  const total = searchParams.get("total") || "0.00";
 
-  const totalAmount = location.state?.totalAmount;
+  const onSuccess = () => {
+    navigate("/order-success");
+  };
 
-  if (!totalAmount) {
+  if (!orderId) {
     return (
-      <div className="text-center mt-10">
-        <h2>No order found</h2>
-        <button
-          onClick={() => navigate("/cart")}
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          Back to Cart
-        </button>
+      <div className="text-center py-20 text-red-500">
+        Invalid order. Please try again.
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto mt-10 p-6">
-      <h2 className="text-3xl font-bold text-center mb-8">
+    <div className="max-w-2xl mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold text-center mb-8">
         Choose Payment Method
-      </h2>
-
-      {/* Side-by-side layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-        {/* Stripe */}
-        <div className="bg-gray-100 p-4 rounded shadow">
-          <StripePaymentPage totalAmount={totalAmount} />
-        </div>
-
-        {/* Bitcoin */}
-        <div className="bg-gray-100 p-4 rounded shadow">
-          <BitcoinPaymentPage totalAmount={totalAmount} />
-        </div>
-
+      </h1>
+      <div className="flex flex-col md:flex-row gap-6">
+        <Elements stripe={stripePromise}>
+          <StripePaymentPage
+            orderId={orderId}
+            total={total}
+            onSuccess={onSuccess}
+          />
+        </Elements>
+        <BitcoinPaymentPage
+          orderId={orderId}
+          total={total}
+          onSuccess={onSuccess}
+        />
       </div>
     </div>
   );
