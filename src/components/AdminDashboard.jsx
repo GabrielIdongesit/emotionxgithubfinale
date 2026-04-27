@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { orderAPI } from "../services/orders.js";
 import { productAPI } from "../services/products.js";
-import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import {
   BarChart,
@@ -15,7 +14,6 @@ import {
 } from "recharts";
 
 const AdminDashboard = () => {
-  // const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
