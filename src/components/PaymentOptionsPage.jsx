@@ -1,14 +1,8 @@
-import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import StripePaymentPage from "./StripePaymentPage";
 import BitcoinPaymentPage from "./BitcoinPaymentPage";
 import { loadStripe } from "@stripe/stripe-js";
-import {
-  Elements,
-  CardElement,
-  useStripe,
-  useElements,
-} from "@stripe/react-stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
@@ -16,7 +10,7 @@ const PaymentOptionsPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const orderId = searchParams.get("orderId");
-  const method = searchParams.get("method"); // "card" or "bitcoin"
+  const _method = searchParams.get("method"); // "card" or "bitcoin"
   const total = searchParams.get("total") || "0.00";
 
   const onSuccess = () => {

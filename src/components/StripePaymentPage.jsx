@@ -1,15 +1,8 @@
 import React, { useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
-import {
-  Elements,
-  CardElement,
-  useStripe,
-  useElements,
-} from "@stripe/react-stripe-js";
+import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 
 import { paymentAPI } from "../services/payments.js";
-
-const stripePromise = loadStripe("pk_test_your_publishable_key_here");
 
 // ------------------
 // Checkout Form
