@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { QRCodeCanvas } from "qrcode.react";
+// import { useLocation, useNavigate } from "react-router-dom";
+// import { QRCodeCanvas } from "qrcode.react";
 
 import { paymentAPI } from "../services/payments.js";
 

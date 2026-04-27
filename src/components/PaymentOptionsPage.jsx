@@ -10,7 +10,6 @@ const PaymentOptionsPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const orderId = searchParams.get("orderId");
-  const _method = searchParams.get("method"); // "card" or "bitcoin"
   const total = searchParams.get("total") || "0.00";
 
   const onSuccess = () => {

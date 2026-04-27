@@ -15,7 +15,7 @@ import {
 } from "recharts";
 
 const AdminDashboard = () => {
-  const { user, logout } = useAuth();
+  // const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
