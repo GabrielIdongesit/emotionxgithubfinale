@@ -9,7 +9,7 @@ import axios from "axios";
 //   res.data.output   ← for arrays and objects
 // ─────────────────────────────────────────────────────────────────────────────
 
-const BASE_URL = process.env.API_URL || "http://localhost:8070/api";
+const BASE_URL = process.env.API_URL;
 
 const api = axios.create({ baseURL: BASE_URL });
 
