@@ -9,7 +9,7 @@ import axios from "axios";
 //   res.data.output   ← for arrays and objects
 // ─────────────────────────────────────────────────────────────────────────────
 
-const BASE_URL = process.env.API_URL;
+const BASE_URL = process.env.REACT_APP_API_URL;
 
 const api = axios.create({ baseURL: BASE_URL });
 
