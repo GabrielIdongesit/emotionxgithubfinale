@@ -24,7 +24,7 @@ const StripePaymentPage = ({ orderId, total, onSuccess }) => {
     try {
       // 1. Create PaymentIntent on backend
       const { data } = await paymentAPI.createStripeIntent(orderId);
-      const { clientSecret, paymentIntentId } = data.data;
+      const { clientSecret, paymentIntentId } = data.output ?? data.data;
 
       // 2. Confirm payment with Stripe on frontend
       const result = await stripe.confirmCardPayment(clientSecret, {

@@ -4,13 +4,13 @@ import { BsFillCartFill } from "react-icons/bs";
 import { MdFavorite, MdHelp } from "react-icons/md";
 import { HiUser } from "react-icons/hi";
 import { NavLink } from "react-router-dom";
+import logo from "../assets/emotionxLogo.jpeg";
 
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 
 const Navbar = ({ setSearchTerm }) => {
   const [nav, setNav] = useState(false);
-
   const { user, logout } = useAuth();
   const { cartCount } = useCart();
 
@@ -24,21 +24,26 @@ const Navbar = ({ setSearchTerm }) => {
   return (
     <div className="bg-white top-0 sticky z-50 mx-auto flex justify-between items-center p-4 relative">
       {/* Left: Hamburger + Logo */}
-      <div className="flex items-center">
+      <div className="flex items-center gap-2">
         <div onClick={() => setNav(!nav)} className="cursor-pointer">
           <AiOutlineMenu
             className="hover:bg-teal-400 p-2 hover:text-white hover:rounded-full"
             size={40}
           />
         </div>
-        <NavLink to="/">
-          <h1 className="text-[10px] sm:text-xl lg:text-4xl px-2 font-bold">
-            E-<span className="font-bold">MotionX</span>
-          </h1>
+        <NavLink to="/" className="flex items-center gap-2">
+          <img
+            src={logo}
+            alt="E-MotionX"
+            className="h-10 w-10 rounded-full object-cover"
+          />
+          <span className="font-bold text-lg hidden sm:block">
+            E-<span className="text-green-500">MotionX</span>
+          </span>
         </NavLink>
       </div>
 
-      {/* Search Input */}
+      {/* Search */}
       <div className="bg-gray-200 rounded-full flex items-center px-2 w-full sm:w-[400px] lg:w-[500px] mx-4">
         <AiOutlineSearch size={25} />
         <input
@@ -49,15 +54,13 @@ const Navbar = ({ setSearchTerm }) => {
         />
       </div>
 
-      {/* Right Buttons */}
+      {/* Right */}
       <div className="flex items-center gap-3">
         <div className="hidden lg:flex items-center bg-gray-200 rounded-full p-1 text-[14px]">
           <NavLink
             to="/delivery"
             className={({ isActive }) =>
-              `cursor-pointer rounded-full p-2 ${
-                isActive ? "bg-green-400 text-white" : "font-semibold"
-              }`
+              `cursor-pointer rounded-full p-2 ${isActive ? "bg-green-400 text-white" : "font-semibold"}`
             }
           >
             Delivery
@@ -65,19 +68,16 @@ const Navbar = ({ setSearchTerm }) => {
           <NavLink
             to="/pickup"
             className={({ isActive }) =>
-              `cursor-pointer rounded-full p-2 ${
-                isActive ? "bg-green-400 text-white" : "font-semibold"
-              }`
+              `cursor-pointer rounded-full p-2 ${isActive ? "bg-green-400 text-white" : "font-semibold"}`
             }
           >
             Pickup
           </NavLink>
         </div>
 
-        {/* Cart Icon with live count badge */}
         <NavLink
           to="/cart"
-          className="text-black flex md:flex border p-3 border-teal-400 items-center rounded-full relative"
+          className="text-black flex border p-3 border-teal-400 items-center rounded-full relative"
         >
           <BsFillCartFill size={20} className="mr-2" />
           Cart
@@ -91,10 +91,10 @@ const Navbar = ({ setSearchTerm }) => {
         <div className="hidden md:flex items-center gap-3">
           {user ? (
             <>
-              <div className="w-8 h-8 rounded-full bg-teal-500 flex cursor-pointer italic items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 rounded-full bg-teal-500 flex cursor-pointer items-center justify-center text-white font-bold text-sm">
                 {getUserAvatar(user.fullName)}
               </div>
-              <span className="text-sm italic cursor-pointer text-gray-600">
+              <span className="text-sm italic text-gray-600">
                 Hi, {user.fullName}
               </span>
               <button
@@ -123,7 +123,6 @@ const Navbar = ({ setSearchTerm }) => {
         </div>
       </div>
 
-      {/* Overlay */}
       {nav && (
         <div
           className="fixed top-0 left-0 w-full h-screen bg-black/80 z-20"
@@ -131,7 +130,6 @@ const Navbar = ({ setSearchTerm }) => {
         />
       )}
 
-      {/* Close Button */}
       {nav && (
         <div
           onClick={() => setNav(false)}
@@ -146,10 +144,20 @@ const Navbar = ({ setSearchTerm }) => {
 
       {/* Mobile Drawer */}
       <div
-        className={`fixed top-0 left-0 w-[300px] h-screen bg-white z-30 transition-transform duration-300 ${
-          nav ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed top-0 left-0 w-[300px] h-screen bg-white z-30 transition-transform duration-300 ${nav ? "translate-x-0" : "-translate-x-full"}`}
       >
+        {/* Drawer logo header */}
+        <div className="flex items-center gap-3 p-4 bg-black">
+          <img
+            src={logo}
+            alt="E-MotionX"
+            className="h-12 w-12 rounded-full object-cover"
+          />
+          <span className="font-bold text-lg text-white">
+            E-<span className="text-green-400">MotionX</span>
+          </span>
+        </div>
+
         <nav>
           <ul className="flex flex-col p-4 text-gray-800">
             <NavLink to="/" onClick={() => setNav(false)}>
@@ -171,7 +179,7 @@ const Navbar = ({ setSearchTerm }) => {
                 onClick={handleLogout}
                 className="text-xl hover:bg-red-500 hover:text-white border rounded-xl p-2 my-2 uppercase font-semibold flex items-center cursor-pointer"
               >
-                <div className="w-6 h-6 rounded-full bg-teal-500 flex italic items-center justify-center text-white font-bold text-xs mr-2">
+                <div className="w-6 h-6 rounded-full bg-teal-500 flex items-center justify-center text-white font-bold text-xs mr-2">
                   {getUserAvatar(user.fullName)}
                 </div>
                 Logout

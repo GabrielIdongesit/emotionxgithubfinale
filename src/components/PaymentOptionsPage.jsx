@@ -9,11 +9,12 @@ const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 const PaymentOptionsPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
   const orderId = searchParams.get("orderId");
   const total = searchParams.get("total") || "0.00";
 
   const onSuccess = () => {
-    navigate("/order-success");
+    navigate("/success");
   };
 
   if (!orderId) {

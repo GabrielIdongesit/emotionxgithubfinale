@@ -5,99 +5,109 @@ import { useState, useEffect } from "react";
 import { paymentAPI } from "../services/payments.js";
 
 const BitcoinPaymentPage = ({ orderId, total, onSuccess }) => {
-  const [details, setDetails] = useState(null);
+  const BTC_ADDRESS =
+    process.env.REACT_APP_BITCOIN_ADDRESS || "bc1xxxxxxxxxxxxxxxxxxxxxxxxx";
+
   const [txHash, setTxHash] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [showTxInput, setShowTxInput] = useState(false);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchDetails = async () => {
-      setLoading(true);
-      try {
-        const { data } = await paymentAPI.getBitcoinDetails(orderId);
-        setDetails(data.data);
-      } catch (err) {
-        setError("Could not load Bitcoin details");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDetails();
-  }, [orderId]);
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${BTC_ADDRESS}`;
 
-  const copyAddress = () => {
-    navigator.clipboard.writeText(details?.address || "");
+  const handleCopy = () => {
+    navigator.clipboard.writeText(BTC_ADDRESS);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), 2500);
   };
 
   const handleConfirm = async () => {
     if (!txHash.trim()) {
-      setError("Please enter your transaction hash");
+      setError("Please paste your Transaction ID (txid)");
       return;
     }
     setSubmitting(true);
     setError(null);
     try {
-      await paymentAPI.confirmBitcoin(orderId, txHash);
+      await paymentAPI.confirmBitcoin(orderId, txHash.trim());
       onSuccess();
     } catch (err) {
-      setError(err.response?.data?.message || "Confirmation failed");
+      setError(err.response?.data?.message || "Submission failed. Try again.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading)
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        Loading BTC details...
-      </div>
-    );
-
   return (
-    <div className="bg-white rounded-xl shadow p-6 flex-1">
-      <h2 className="text-lg font-bold mb-1 text-center">Pay with Bitcoin</h2>
-      <p className="text-gray-500 text-sm text-center mb-4">Amount: ${total}</p>
+    <div className="bg-gray-100 rounded-2xl shadow flex-1 flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-sm text-center">
+        <h2 className="text-xl font-bold mb-1">Pay with Bitcoin</h2>
+        <p className="text-gray-500 text-sm mb-6">Amount: ${total}</p>
 
-      {details && (
-        <>
-          {/* QR Code via API */}
-          <div className="flex justify-center mb-3">
-            <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${details.address}`}
-              alt="Bitcoin QR Code"
-              className="rounded-lg border"
-            />
-          </div>
-          <p className="text-center text-xs text-gray-500 break-all mb-3">
-            {details.address}
-          </p>
+        {/* QR Code */}
+        <div className="flex justify-center mb-4">
+          <img
+            src={qrUrl}
+            alt="Bitcoin QR Code"
+            className="rounded-lg border"
+            width={180}
+            height={180}
+          />
+        </div>
+
+        {/* BTC Address */}
+        <p className="text-xs text-gray-500 break-all mb-5 px-2">
+          {BTC_ADDRESS}
+        </p>
+
+        {/* Copy Address */}
+        <button
+          onClick={handleCopy}
+          className="w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold py-2.5 rounded-lg mb-3 transition"
+        >
+          {copied ? "✓ Copied!" : "Copy Address"}
+        </button>
+
+        {/* I Have Sent Payment → reveals tx input */}
+        {!showTxInput ? (
           <button
-            onClick={copyAddress}
-            className="w-full border border-gray-300 rounded-lg py-2 text-sm mb-4 hover:bg-gray-50 transition"
+            onClick={() => setShowTxInput(true)}
+            className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg transition"
           >
-            {copied ? "✓ Copied!" : "Copy Address"}
+            I Have Sent Payment
           </button>
-        </>
-      )}
-
-      <input
-        className="w-full border rounded-lg px-3 py-2 text-sm mb-3"
-        placeholder="Paste your transaction hash (txid)"
-        value={txHash}
-        onChange={(e) => setTxHash(e.target.value)}
-      />
-      {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
-      <button
-        onClick={handleConfirm}
-        disabled={submitting}
-        className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition disabled:opacity-50"
-      >
-        {submitting ? "Submitting..." : "I Have Sent Payment"}
-      </button>
+        ) : (
+          <div className="mt-2 text-left">
+            <label className="text-xs text-gray-500 mb-1 block">
+              Paste your Transaction ID (txid) to confirm:
+            </label>
+            <input
+              className="w-full border rounded-lg px-3 py-2 text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-green-400"
+              placeholder="e.g. a1b2c3d4e5f6..."
+              value={txHash}
+              onChange={(e) => setTxHash(e.target.value)}
+            />
+            {error && <p className="text-red-500 text-xs mb-2">{error}</p>}
+            <button
+              onClick={handleConfirm}
+              disabled={submitting}
+              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 rounded-lg transition disabled:opacity-50"
+            >
+              {submitting ? "Submitting..." : "Confirm Payment"}
+            </button>
+            <button
+              onClick={() => {
+                setShowTxInput(false);
+                setError(null);
+              }}
+              className="w-full mt-2 text-sm text-gray-400 hover:text-gray-600"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
